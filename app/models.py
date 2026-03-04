@@ -1,10 +1,6 @@
 from app import db
 from datetime import datetime
 
-# ==============================================================================
-# ESTE ARCHIVO ES LA REPRESENTACIÓN EN PYTHON DE TU BASE DE DATOS MYSQL
-# ==============================================================================
-
 class Usuario(db.Model):
     __tablename__ = 'usuario'
     
