@@ -7,11 +7,9 @@ class Usuario(db.Model):
     id_usuario = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre_completo = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
-    contrasena_encript = db.Column(db.String(255), nullable=False) # Actualizado
+    contrasena_encript = db.Column(db.String(255), nullable=False)
     rol = db.Column(db.String(50), default='ADMINISTRATIVO')
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relación: Un usuario gestiona muchas facturas
     facturas_gestionadas = db.relationship('Factura', backref='gestor', lazy=True)
 
 class ConfiguracionEmpresa(db.Model):
