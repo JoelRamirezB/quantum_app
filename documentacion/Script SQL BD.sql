@@ -1,6 +1,8 @@
 CREATE DATABASE IF NOT EXISTS Quantum;
 USE Quantum;
 
+-- Tablas
+
 CREATE TABLE usuario (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     nombre_completo VARCHAR(100) NOT NULL,
@@ -60,6 +62,8 @@ CREATE TABLE item_factura (
     FOREIGN KEY (id_factura) REFERENCES factura(id_factura) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Triggers
+
 DELIMITER //
 
 CREATE TRIGGER tg_item_total_insert BEFORE INSERT ON item_factura
@@ -97,6 +101,8 @@ FOR EACH ROW BEGIN
 END //
 
 DELIMITER ;
+
+-- Procedimientos almacenados
 
 DELIMITER //
 
