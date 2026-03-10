@@ -8,7 +8,7 @@ class Usuario(db.Model):
     nombre_completo = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     contrasena_encript = db.Column(db.String(255), nullable=False)
-    rol = db.Column(db.String(50), default='OPERATIVO') 
+    rol = db.Column(db.Enum('ADMINISTRADOR', 'OPERATIVO'), default='OPERATIVO') 
     activo = db.Column(db.Boolean, default=True)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
