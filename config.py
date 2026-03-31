@@ -9,4 +9,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'uploads')
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # Límite de 16 MB
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  
+
+def init_app(app):
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

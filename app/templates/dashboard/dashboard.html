@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Bienvenido, {{ current_user.nombre_completo }}</h2>
+    <p>Sesión iniciada correctamente.</p>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">
+        Cerrar Sesión
+    </a>
+</div>
+{% endblock %}
