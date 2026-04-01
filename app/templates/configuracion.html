@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Configuración{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">Configuración de la empresa</h3>
+    <form method="POST">
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Datos de Atelcro S.A.S.</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">NIT</label>
+                        <input type="text" name="nit" class="form-control" value="{{ config.nit if config else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Razón Social</label>
+                        <input type="text" name="razon_social" class="form-control" value="{{ config.razon_social if config else '' }}" required> 
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" name="direccion" class="form-control" value="{{ config.direccion if config else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control" value="{{ config.telefono if config else '' }}" required> 
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email de recepción</label>
+                    <input type="email" name="email_recepcion" class="form-control" value="{{ config.email_recepcion if config else '' }}" required>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Credenciales SIIGO NUBE</strong>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    Esta información  es sensible.
+                    Solo modificar si es necesario.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Usuario SIIGO</label>
+                    <input type="text" name="siigo_usuario" class="form-control" value="{{ config.siigo_usuario if config else '' }}">
+                </div>
+                <div class="mb-3">
+                    <lable class="form-label">Llave de acceso</lable>
+                    <input type="password" name="siigo_llave_acceso" class="form-control" placeholder="Dejar vacío para mantener la actual">
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar configuración</button>
+        <a href="{{ url_for('configuracion.ver_configuracion') }}" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

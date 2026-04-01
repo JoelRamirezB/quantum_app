@@ -23,9 +23,8 @@ def login():
             login_user(usuario)
             return redirect(url_for('auth.dashboard'))
         else:
-            flash('Credenciales incorrectas', 'danger')
-
-return render_template('login.html')
+            flash('Credenciales incorrectas', 'danger')            
+    return render_template('login.html')
 
 @auth.route('/logout')
 @login_required

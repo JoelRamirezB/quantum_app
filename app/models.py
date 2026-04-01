@@ -9,7 +9,7 @@ def load_user(user_id):
 
 class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuario'
-    
+
     id_usuario = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre_completo = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
@@ -17,6 +17,9 @@ class Usuario(db.Model, UserMixin):
     rol = db.Column(db.Enum('ADMINISTRADOR', 'OPERATIVO'), default='OPERATIVO') 
     activo = db.Column(db.Boolean, default=True)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def get_id(self):
+        return str(self.id_usuario)
 
     facturas_cargadas = db.relationship('Factura', foreign_keys='Factura.id_usuario_carga', backref='usuario_carga', lazy=True)
     facturas_validadas = db.relationship('Factura', foreign_keys='Factura.id_usuario_validador', backref='usuario_validador', lazy=True)
@@ -60,7 +63,7 @@ class Factura(db.Model):
     numero_factura = db.Column(db.String(50), nullable=False)
     nit_proveedor = db.Column(db.String(20), nullable=False)
     proveedor = db.Column(db.String(150))
-    tipo_factura = db.Column(db.Enum(20), default='COMPRA')
+    tipo_factura = db.Column(db.Enum('COMPRA', 'VENTA'), default='COMPRA')
     metodo_pago = db.Column(db.String(50), default='Credito')
     
     fecha_emision = db.Column(db.Date)
@@ -71,7 +74,7 @@ class Factura(db.Model):
     total_impuestos = db.Column(db.Numeric(15, 2), default=0.00)
     total_pagar = db.Column(db.Numeric(15, 2), default=0.00)
     
-    estado = db.Column(db.Enum(30), default='CARGADA')
+    estado = db.Column(db.Enum('CARGADA', 'VALIDADA', 'EXPORTADA', 'ERROR'), default='CARGADA')
     ruta_archivo = db.Column(db.Text)
     id_siigo = db.Column(db.String(100))
     mensaje_error = db.Column(db.Text)
