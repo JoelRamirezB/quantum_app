@@ -24,5 +24,8 @@ def create_app(config_class=Config):
 
     from app.routes.configuracion import configuracion as configuracion_blueprint
     app.register_blueprint(configuracion_blueprint)
+
+    from app.routes.carga import carga as carga_blueprint
+    app.register_blueprint(carga_blueprint)
     
     return app

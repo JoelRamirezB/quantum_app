@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Cargar factura{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">Cargar factura</h3>
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Seleccionar archivo</label>
+                    <input type="file" name="archivo" class="form-control" accept=".pdf" required>
+                    <div class="form-text">
+                        Solo se permiten archivos pdf.
+                        Tamaño máximo 16 MB
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Cargar y procesar</button>
+                <a href="{{ url_for('auth.dashboard') }}" class="btn btn-secundary ms-2">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
