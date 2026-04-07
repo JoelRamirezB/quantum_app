@@ -27,5 +27,11 @@ def create_app(config_class=Config):
 
     from app.routes.carga import carga as carga_blueprint
     app.register_blueprint(carga_blueprint)
+
+    from app.routes.validacion import validacion as validacion_blueprint
+    app.register_blueprint(validacion_blueprint)
+
+    from app.routes.archivos import archivos as archivos_blueprint
+    app.register_blueprint(archivos_blueprint)
     
     return app

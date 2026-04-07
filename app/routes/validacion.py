@@ -4,7 +4,7 @@ from datetime import datetime
 from app import db
 from app.models import Factura, ItemFactura, Auditoria
 
-validacion = Blueprint('validacoin', __name__)
+validacion = Blueprint('validacion', __name__)
 
 def convertir_fecha(texto_fecha):
     if not texto_fecha:
@@ -22,16 +22,16 @@ def convertir_fecha(texto_fecha):
             continue
     return None
 
-@validacion.route
+@validacion.route('/validacion')
 @login_required
 def lista_validacion():
-    facturas_pendientes = Factura.query.filter(Factura.estado.in_(['CARGADA'])).order_by(Factura.fecha_carga.desc()).all
+    facturas_pendientes = Factura.query.filter(Factura.estado.in_(['CARGADA'])).order_by(Factura.fecha_carga.desc()).all()
     return render_template('validacion_lista.html', facturas=facturas_pendientes)
 
 @validacion.route('/validacion/<int:id_factura>', methods=['GET', 'POST'])
 @login_required
 def ver_factura(id_factura):
-    Factura = Factura.query.get_or_404(id_factura)
+    factura = Factura.query.get_or_404(id_factura)
 
     if factura.estado == 'EXPORTADA':
         flash('Esta factura ya fue exportada y no puede ser modificada', 'warning')
@@ -74,7 +74,7 @@ def ver_factura(id_factura):
             return redirect(url_for('validacion.ver_factura', id_factura=id_factura))
 
         elif accion == 'validar':
-            factura.estado == 'VALIDADA'
+            factura.estado = 'VALIDADA'
             factura.id_usuario_validador = (current_user.id_usuario)
             factura.fecha_validacion = datetime.utcnow()
 
@@ -94,7 +94,7 @@ def ver_factura(id_factura):
             return redirect(url_for('validacion.lista_validacion'))
 
         elif accion == 'rechazar':
-            factura.estado == 'ERROR'
+            factura.estado = 'ERROR'
             db.session.commit()
 
             auditoria = Auditoria(
@@ -110,5 +110,5 @@ def ver_factura(id_factura):
             flash('Factura rechazada', 'warning')
             return redirect(url_for('validacion.lista_validacion'))
 
-        return render_template('validacion_detalle.html', factura=factura)
+    return render_template('validacion_detalle.html', factura=factura)
 

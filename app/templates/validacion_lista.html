@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Validación de facturas{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between aling-items-center mb-4">
+        <h3>Facturas pendientes de validación</h3>
+        <a href="{{ url_for('carga.subir_factura') }}" class="btn btn-primary">Cargar nueva factura</a> 
+    </div>
+    {% if facturas %}
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>N° Factura</th>
+                        <th>Proveedor</th>
+                        <th>Nit</th>
+                        <th>Fecha emisión</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in facturas %}
+                    <tr>
+                        <td>{{ factura.numero_factura }}</td>
+                        <td>{{ factura.proveedor }}</td>
+                        <td>{{ factura.nit_proveedor }}</td>
+                        <td>{{ factura.fecha_emision or 'Sin fecha' }}</td>
+                        <td>${{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                        <td>
+                            <span class="badge bg-warning text-dark">
+                                {{ factura.estado }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('validacion.ver_factura', id_factura=factura.id_factura) }}" class="btn btn-sm btn-outline-primary">
+                                Revisar
+                            </a>
+                        </td>
+                    </tr>
+                    {%   endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No hay facturas pendientes de validación</div>
+    {% endif %}
+</div>
+{% endblock %}
