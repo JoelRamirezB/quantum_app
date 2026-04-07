@@ -25,7 +25,7 @@ def convertir_fecha(texto_fecha):
 @validacion.route('/validacion')
 @login_required
 def lista_validacion():
-    facturas_pendientes = Factura.query.filter(Factura.estado.in_(['CARGADA'])).order_by(Factura.fecha_carga.desc()).all()
+    facturas_pendientes = Factura.query.filter(Factura.estado.in_(['CARGADA', 'ERROR'])).order_by(Factura.fecha_carga.desc()).all()
     return render_template('validacion_lista.html', facturas=facturas_pendientes)
 
 @validacion.route('/validacion/<int:id_factura>', methods=['GET', 'POST'])
@@ -35,6 +35,10 @@ def ver_factura(id_factura):
 
     if factura.estado == 'EXPORTADA':
         flash('Esta factura ya fue exportada y no puede ser modificada', 'warning')
+        return redirect(url_for('validacion.lista_validacion'))
+
+    if factura.estado == 'VALIDADA':
+        flash('Esta factura ya fue validada y no puede ser modificada', 'warning')
         return redirect(url_for('validacion.lista_validacion'))
 
     if request.method == 'POST':

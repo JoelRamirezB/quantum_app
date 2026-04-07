@@ -24,7 +24,15 @@
                 <div class="card mb-3">
                     <div class="card-header d-flex justify-content-between">
                         <strong>Datos de la factura</strong>
-                        <span class="badge bg-warning text-dark">{{ factura.estado }}</span>
+                            {% if factura.estado == 'CARGADA' %}
+                            <span class="badge bg-warning text-dark">
+                                CARGADA
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger text-dark">
+                                ERROR
+                            </span>
+                            {% endif %}
                     </div>
                     <div class="card-body">
                         <div class="row">
