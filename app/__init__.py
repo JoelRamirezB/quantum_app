@@ -33,5 +33,8 @@ def create_app(config_class=Config):
 
     from app.routes.archivos import archivos as archivos_blueprint
     app.register_blueprint(archivos_blueprint)
-    
+
+    from app.routes.historial import historial as historial_blueprint
+    app.register_blueprint(historial_blueprint)
+
     return app

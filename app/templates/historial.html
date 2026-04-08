@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Historial{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Historial de facturas</h3>
+        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-secondary btn-sm">
+            Volver al dashboard
+        </a>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Filtros de búsqueda</strong>
+        </div>
+        <div class="card-body">
+            <form method="GET">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Proveedor</label>
+                        <input type="text" name="proveedor" class="form-control" value="{{ proveedor_filtro }}" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="CARGADA" {{ 'selected' if estado_filtro == 'CARGADA' }}>Cargada</option>
+                            <option value="VALIDADA" {{ 'selected' if estado_filtro == 'VALIDADA' }}>Validada</option>
+                            <option value="EXPORTADA" {{ 'selected' if estado_filtro == 'EXPORTADA' }}>Exportada</option>
+                            <option value="ERROR" {{ 'selected' if estado_filtro == 'ERROR' }}>Error</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Filtrar
+                </button>
+                <a href="{{ url_for('historial.ver_historial') }}" class="btn btn-outline-secondary btn-sm ms-2">
+                    Limpiar filtros
+                </a>
+            </form>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <strong>Resultados</strong>
+            <small class="text-muted">{{ facturas|length }} facturas encontradas</small>
+        </div>
+        <div class="card-body p-0">
+            {% if facturas %}
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>N° Factura</th>
+                        <th>Proveedor</th>
+                        <th>NIT</th>
+                        <th>Fecha emisión</th>
+                        <th>Fecha carga</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in facturas %}
+                    <tr>
+                        <td>{{ factura.numero_factura }}</td>
+                        <td>{{ factura.proveedor or 'Sin proveedor' }}</td>
+                        <td>{{ factura.nit_proveedor }}</td>
+                        <td>{{ factura.fecha_emision or 'Sin fecha' }}</td>
+                        <td>{{ factura.fecha_carga.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>${{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                        <td>
+                            {% if factura.estado == 'CARGADA' %}
+                            <span class="badge bg-warning text-dark">CARGADA</span>
+                            {% elif factura.estado == 'VALIDADA' %}
+                            <span class="badge bg-success">VALIDADA</span>
+                            {% elif factura.estado == 'EXPORTADA' %}
+                            <span class="badge bg-primary">EXPORTADA</span>
+                            {% elif factura.estado == 'ERROR' %}
+                            <span class="badge bg-danger">ERROR</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('validacion.ver_factura', id_factura=factura.id_factura) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-3 text-muted">
+                No se encontraron facturas con los filtros aplicados.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

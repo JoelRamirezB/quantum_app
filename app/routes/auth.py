@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, bcrypt
-from app.models import Usuario
+from app.models import Usuario, Factura
 
 auth = Blueprint('auth', __name__)
 
@@ -35,4 +35,18 @@ def logout():
 @auth.route('/')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+
+    total_facturas = Factura.query.count()
+    pendientes = Factura.query.filter_by(estado='CARGADA').count()
+    validadas = Factura.query.filter_by(estado='VALIDADA').count()
+    exportadas = Factura.query.filter_by(estado='EXPORTADA').count()
+    ultimas_facturas =  Factura.query.order_by(Factura.fecha_carga.desc()).limit(5).all()
+
+    return render_template(
+        'dashboard.html',
+        total_facturas=total_facturas,
+        pendientes=pendientes,
+        validadas=validadas,
+        exportadas=exportadas,
+        ultimas_facturas=ultimas_facturas
+    )

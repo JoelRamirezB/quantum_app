@@ -2,10 +2,133 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h2>Bienvenido, {{ current_user.nombre_completo }}</h2>
-    <p>Sesión iniciada correctamente.</p>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">
-        Cerrar Sesión
-    </a>
+    <div class="d-flex justify-content-between aling-items-center mb-4">
+        <h3>Bienvenido, {{ current_user.nombre_completo }}</h3>
+        <small class="text-muted">{{ current_user.rol }}</small>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-secondary">
+                <div class="card-body">
+                    <h2>{{ total_facturas }}</h2>
+                    <p class="text-muted mb-0">Total facturas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <h2 class="text-warning">{{ pendientes }}</h2>
+                    <p class="text-muted mb-0">Pendientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <h2 class="text-success">{{ validadas }}</h2>
+                    <p class="text-muted mb-0">Validadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <h2 class="text-primary">{{ exportadas }}</h2>
+                    <p class="text-muted mb-0">Exportadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-tittle">Cargar factura</h5>
+                    <p class="text-muted">Sube un PDF para procesarlo automáticamente</p>
+                    <a href="{{ url_for('carga.subir_factura') }}" class="btn btn-primary">Cargar PDF</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-tittle">Validar factura</h5>
+                    <p class="text-muted">Revisa y aprueba las facturas pendientes</p>
+                    <a href="{{ url_for('validacion.lista_validacion') }}" class="btn btn-warning">
+                        Ver pendientes
+                        {% if pendientes > 0 %}
+                        <span class="badge bg-danger ms-1">{{ pendientes }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-tittle">Historial</h5>
+                    <p class="text-muted">Consulta todas las facturas procesadas</p>
+                    <a href="{{ url_for('historial.ver_historial') }}" class="btn btn-secondary">Ver historial</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <strong>Últimas facturas procesadas</strong>
+        </div>
+        <div class="card-body p-0">
+            {% if ultimas_facturas %}
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>N° factura</th>
+                        <th>Proveedor</th>
+                        <th>Fecha carga</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in ultimas_facturas %}
+                    <tr>
+                        <td>{{ factura.numero_factura }}</td>
+                        <td>{{ factura.proveedor or 'Sin proveedor' }}</td>
+                        <td>{{ factura.nit_proveedor }}</td>
+                        <td>{{ factura.fecha_emision or 'Sin fecha' }}</td>
+                        <td>{{ factura.fecha_carga.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                        <td>
+                            {% if factura.estado == 'CARGADA' %}
+                            <span class="badge bg-warning text-dark">CARGADA</span>
+                            {% elif factura.estado == 'VALIDADA' %}
+                            <span class="badge bg-success">VALIDADA</span>
+                            {% elif factura.estado == 'EXPORTADA' %}
+                            <span class="badge bg-primary">EXPORTADA</span>
+                            {% elif factura.estado == 'ERROR' %}
+                            <span class="badge bg-danger">ERROR</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('validacion.ver_factura', id_factura=factura.id_factura) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else  %}
+            <div class="p-3 text-muted">
+                No hay facturas procesadas.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mt-3">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">
+            Cerrar sesión
+        </a>
+    </div>
 </div>
 {% endblock %}

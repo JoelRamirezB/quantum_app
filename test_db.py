@@ -14,7 +14,7 @@ with app.app_context():
         rol='ADMINISTRADOR',
         activo=True
     )
-    
+
     db.session.add(usuario)
     db.session.commit()
     print('Usuario administrador creado exitosamente.')
