@@ -5,16 +5,16 @@ app = create_app()
 
 with app.app_context():
     password_hash = bcrypt.generate_password_hash(
-                    'admin123').decode('utf-8')
+                    'operativo123').decode('utf-8')
     
     usuario = Usuario(
-        nombre_completo='Administrador Quantum',
-        email='admin@quantum.com',
+        nombre_completo='Usuario Operativo',
+        email='operativo@quantum.com',
         contrasena_encript=password_hash,
-        rol='ADMINISTRADOR',
+        rol='OPERATIVO',
         activo=True
     )
-
+    
     db.session.add(usuario)
     db.session.commit()
-    print('Usuario administrador creado exitosamente.')
+    print('Usuario operativo creado exitosamente.')

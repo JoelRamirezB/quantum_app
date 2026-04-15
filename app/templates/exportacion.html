@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Exportación{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Exportación a SIIGO NUBE</h3>
+        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-secondary btn-sm">Volver al menú principal</a>
+    </div>
+    {% if facturas %}
+    <div class="alert alert-info">Hay
+        <strong>{{ facturas|length }}</strong>
+        factura(s) validada(s) listas para exportar.      
+    </div>
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Facturas a exportar</strong>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>N° Factura</th>
+                        <th>Proveedor</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Validada por</th>
+                        <th>Fecha validación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in facturas %}
+                    <tr>
+                         <td>{{ factura.numero_factura }}</td>
+                         <td>{{ factura.proveedor or 'Sin proveedor' }}</td>
+                         <td>{{ factura.fecha_emision or 'Sin factura' }}</td>
+                         <td>${{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                         <td>{{ factura.usuario_validador.nombre_completo if factura.usuario_validador else 'N/A' }}</td>
+                         <td>{{ factura.fecha_validacion.strftime('%d/%m/%Y %H:%M') if factura.fecha_validacion else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5>Generar archivo de exportación</h5>
+            <p class="text-muted">
+                Al exportar el archivo, todas las facturas listadas cambiarán su estado a
+                <strong>EXPORTADA</strong> y no podrán ser modificadas nuevamente.
+            </p>
+            <form method="POST" action="{{ url_for('exportacion.descargar_exportacion') }}">
+                <button type="submit" class="btn btn-success">Decargar archivo Excel para SIIGO</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        No hay facturas validadas pendientes de exportación.
+        <a href="{{ url_for('validacion.lista_validacion') }}" class="alert-link">Ir a validar facturas</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, bcrypt
-from app.models import Usuario, Factura
+from app.models import Usuario
 
 auth = Blueprint('auth', __name__)
 
@@ -35,6 +35,8 @@ def logout():
 @auth.route('/')
 @login_required
 def dashboard():
+
+    from app.models import Factura
 
     total_facturas = Factura.query.count()
     pendientes = Factura.query.filter_by(estado='CARGADA').count()

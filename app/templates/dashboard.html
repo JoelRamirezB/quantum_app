@@ -41,7 +41,7 @@
         </div>
     </div>
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <h5 class="card-tittle">Cargar factura</h5>
@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <h5 class="card-tittle">Validar factura</h5>
@@ -64,12 +64,31 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <h5 class="card-tittle">Historial</h5>
                     <p class="text-muted">Consulta todas las facturas procesadas</p>
                     <a href="{{ url_for('historial.ver_historial') }}" class="btn btn-secondary">Ver historial</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Exportar</h5>
+                    <p class="text-muted">
+                        Genera el archivo Excel para SIIGO
+                    </p>
+                    <a href="{{ url_for('exportacion.ver_exportacion') }}" 
+                    class="btn btn-success">
+                        Exportar a SIIGO
+                        {% if validadas > 0 %}
+                        <span class="badge bg-danger ms-1">
+                            {{ validadas }}
+                        </span>
+                        {% endif %}
+                    </a>
                 </div>
             </div>
         </div>
@@ -85,10 +104,11 @@
                     <tr>
                         <th>N° factura</th>
                         <th>Proveedor</th>
-                        <th>Fecha carga</th>
-                        <th>Total</th>
+                        <th>Nit proveedor</th>
+                        <th>Fecha de emisión</th>
+                        <th>Fecha de carga</th>
+                        <th>Total a pagar</th>
                         <th>Estado</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>

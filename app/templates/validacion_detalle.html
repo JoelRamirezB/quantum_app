@@ -28,9 +28,13 @@
                             <span class="badge bg-warning text-dark">
                                 CARGADA
                             </span>
-                            {% else %}
+                            {% elif factura.estado == 'ERROR' %}
                             <span class="badge bg-danger text-dark">
                                 ERROR
+                            </span>
+                            {% elif factura.estado == 'VALIDADA' %}
+                            <span class="badge bg-success text-dark">
+                                VALIDADA
                             </span>
                             {% endif %}
                     </div>

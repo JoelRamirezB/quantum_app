@@ -37,4 +37,7 @@ def create_app(config_class=Config):
     from app.routes.historial import historial as historial_blueprint
     app.register_blueprint(historial_blueprint)
 
+    from app.routes.exportacion import exportacion as exportacion_blueprint
+    app.register_blueprint(exportacion_blueprint)
+
     return app

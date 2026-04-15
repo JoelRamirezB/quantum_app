@@ -37,10 +37,6 @@ def ver_factura(id_factura):
         flash('Esta factura ya fue exportada y no puede ser modificada', 'warning')
         return redirect(url_for('validacion.lista_validacion'))
 
-    if factura.estado == 'VALIDADA':
-        flash('Esta factura ya fue validada y no puede ser modificada', 'warning')
-        return redirect(url_for('validacion.lista_validacion'))
-
     if request.method == 'POST':
         accion = request.form.get('accion')
 
