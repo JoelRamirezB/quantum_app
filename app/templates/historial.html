@@ -75,7 +75,12 @@
                         <td>{{ factura.nit_proveedor }}</td>
                         <td>{{ factura.fecha_emision or 'Sin fecha' }}</td>
                         <td>{{ factura.fecha_carga.strftime('%d/%m/%Y %H:%M') }}</td>
-                        <td>${{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                        <td>${{ '{:,.0f}'.format(
+                            (factura.total_pagar or 0) - 
+                            (factura.retefuente or 0) - 
+                            (factura.reteiva or 0) - 
+                            (factura.reteica or 0)) }}
+                        </td>
                         <td>
                             {% if factura.estado == 'CARGADA' %}
                             <span class="badge bg-warning text-dark">CARGADA</span>

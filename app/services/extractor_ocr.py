@@ -60,15 +60,18 @@ class ExtractorOCR:
         
     def _extraer_numero_factura(self, texto):
         patrones = [
-            r'(?:N[°º]|No\.?|Número|NUMERO|Factura|FACTURA)\s*[-:]?\s*([A-Z]{1,5}[-\s]?\d{4,10})',
-            r'\b((?:FEIG|FE|CT|POE|FV|FC|FES|FAC|SFC)[-\s]?\d{3,10})\b',
-            r'VENTA\s*:?\s*\n?\s*([A-Z]{1,5}[-\s]?\d{3,10})',
-            r'CT\s+No\.?\s*(\d{3,6})',
+            r'Venta\s+No\s*\.\s*(CT\s+No\.\s*\d{3,6})',
+            r'No\.\s+([A-Z]{2,6}\s*[-]?\s*\d{3,10})',
+            r'No\.\s*\n\s*([A-Z]{2,6}\s*\d{3,10})',
+            r'\b((?:FEIG|FESI|POE|FES|SFC)[-\s]?\d{3,10})\b',
+            r'\b((?:FE|FV|FC|FAC)[-\s]?\d{4,10})\b',
+            r'VENTA\s*:\s*\n\s*([A-Z]{2,5}\d{3,10})',
+            r'(?:N[°º]|N[uú]mero)\s+([A-Z]{2,5}[-]?\d{3,10})',
             r'(?:ELECTR[ÓO]NICA\s+DE\s+VENTA|DE\s+VENTA)\s+([A-Z]{1,5}\d*\s*[-–]\s*\d{4,10})',
-            r'(?:factura|FACTURA)[^\n]{0,50}([A-Z]{1,3}[-]?\d{4,10})',
+            r'(?<!\w)(?:factura|FACTURA)\s+(?:electr[oó]nica\s+)?(?:de\s+venta\s+)?([A-Z]{2,5}[-]?\d{4,10})(?!\w)',
         ]
 
-        for patron in patrones:
+        for patron in patrones: 
             match = re.search(patron, texto, re.IGNORECASE | re.MULTILINE)
             if match:
                 resultado = match.group(1).strip()
@@ -85,8 +88,12 @@ class ExtractorOCR:
         lineas = texto.split('\n')
 
         patrones_nit = [
-            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{3}[,.]?\d{3}[,.]?\d{3}[-–\s]?\d)',
-            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{7,10}[-–]?\d?)',
+            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{3},\d{3},\d{3}\s*[-–]\s*\d)',
+            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{3}\.\d{3}\.\d{3}\s*[-–]\s*\d)',
+            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{3},\d{3},\d{3}[-–]\d)',
+            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{3}\.\d{3}\.\d{3}[-–]\d)',
+            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{7,10}\s*[-–]\s*\d)',
+            r'(?:NIT|Nit|N\.I\.T)[:\s\.]*(\d{7,10})',
         ]
 
         nits_encontrados = []
@@ -104,41 +111,83 @@ class ExtractorOCR:
 
         nit_atelcro = '9008889911'
         for pos, nit in nits_encontrados:
-            nit_sin_digito = nit [:-1] if len(nit) > 9 else nit
-            if '900888991' not in nit and '9008889911' not in nit:
+            nit_sin_separadores = re.sub(r'[,.\s\-–]', '', nit)
+            if ('900888991' not in nit_sin_separadores and 
+                '9008889911' not in nit_sin_separadores):
                 return nit
         return nits_encontrados[0][1] if nits_encontrados else None
 
     def _extraer_proveedor(self, texto):
         lineas = texto.split('\n')
 
+        palabras_corte = [
+            'grandes contribuyentes', 'regimen', 'régimen',
+            'responsable', 'ica bogotá', 'ica bogota', 'ica ',
+            'no somos', 'somos', 'autorretenedor',
+            'retención', 'retencion', 'retenci',
+            'resolucion', 'resolución'
+        ]
+
         palabras_excluir = [
             'factura', 'electronica', 'electrónica', 'venta',
             'nit', 'fecha', 'cliente', 'señores', 'dirección',
             'telefono', 'teléfono', 'correo', 'email', 'pagina',
-            'página', 'resolución', 'resolucion', 'autorizacion',
-            'item', 'código', 'descripción', 'cantidad', 'valor',
-            'subtotal', 'total', 'iva', 'representación'
+            'página', 'autorizacion', 'item', 'código',
+            'descripción', 'cantidad', 'valor', 'subtotal',
+            'total', 'iva', 'representación', 'actividad',
+            'regimen', 'régimen', 'responsable', 'autorretenedor',
+            'contribuyente'
         ]
 
-        for linea in lineas[:8]:
+        primera_linea = lineas[0].strip() if lineas else ''
+        if primera_linea and len(primera_linea) >= 5:
+            linea_lower = primera_linea.lower()
+            nombre = primera_linea
+            for corte in palabras_corte:
+                idx = linea_lower.find(corte.lower())
+                if idx > 5:
+                    nombre = primera_linea[:idx].strip().rstrip('.,- ')
+                    break
+            nombre = nombre.strip()
+            if len(nombre) >= 5 and not any(
+                    p in nombre.lower() for p in palabras_excluir):
+                return nombre
+
+        for linea in lineas[1:10]:
             linea = linea.strip()
             if len(linea) < 5:
                 continue
-            if len(linea) > 100:
+            if len(linea) > 200:
                 continue
-            linea_lower = linea.lower()
-            if any(palabra in linea_lower for palabra in palabras_excluir):
+            if re.match(r'^[.\-]', linea):
+                continue
+            if re.search(r'No\.?\s*\d', linea):
                 continue
             if re.match(r'^\d', linea):
                 continue
-            if re.match(r'^[A-ZÁÉÍÓÚÑ\s\.\,\-&]+$', linea, re.IGNORECASE):
-                return linea
-            if len(linea.split()) >= 2:
-                return linea
-        if lineas:
-            return lineas[0].strip()[:100]
 
+            linea_lower = linea.lower()
+            if any(palabra in linea_lower for palabra in palabras_excluir):
+                continue
+
+            nombre = linea
+            for corte in palabras_corte:
+                idx = linea_lower.find(corte.lower())
+                if idx > 5:
+                    nombre = linea[:idx].strip().rstrip('.,- ')
+                    break
+
+            nombre = nombre.strip()
+            if len(nombre) < 5:
+                continue
+            if re.match(r'^[A-ZÁÉÍÓÚÑ0-9\s\.\,\-&]+$',
+                        nombre, re.IGNORECASE):
+                return nombre
+            if len(nombre.split()) >= 2:
+                return nombre
+
+        if lineas:
+            return lineas[0].strip()[:80]
         return None
 
     def _extraer_fecha(self, texto):
@@ -148,7 +197,9 @@ class ExtractorOCR:
             r'FECHA\s+FIRMADO[:\s]*(\d{2}/\d{2}/\d{4})',
             r'FECHA\s+DE\s+EMISI[ÓO]N.*?(\d{2})\s+(\d{2})\s+(\d{4})',
             r'(?:Generaci[oó]n|generaci[oó]n)[:\s]*(\d{4}-\d{2}-\d{2})',
-            r'(?<!(?:vencimiento|VENCIMIENTO|vigencia|VIGENCIA)[^\n]{0,20})(\d{2}/\d{2}/\d{4})(?!\s*(?:vence|VENCE))',
+            r'(?:Fecha\s+y\s+Hora\s+de\s+(?:Emisi[oó]n|Factura))[:\s]*(\d{2}/\d{2}/\d{4})',
+            r'(?:FECHA\s+FACTURA|Fecha\s+Factura)[:\s]*(\d{2}/\d{2}/\d{4})',
+            r'(\d{2}/\d{2}/\d{4})',
         ]
         for patron in patrones_fecha:
             match = re.search(patron, texto, re.IGNORECASE | re.DOTALL)
@@ -168,19 +219,23 @@ class ExtractorOCR:
     
     def _limpiar_numero(self, valor_texto):
         try:
-            valor_texto = valor_texto.strip().replace('$', '').strip()
-            
-            if re.match(r'^\d{1,3}(,\d{3})*\.\d+$', valor_texto):
+            valor_texto = str(valor_texto).strip()
+            valor_texto = valor_texto.replace('$', '').strip()
+
+            if re.match(r'^\d{1,3}(,\d{3})+\.\d+$', valor_texto):
                 return float(valor_texto.replace(',', ''))
             if re.match(r'^\d{1,3}(\.\d{3})*,\d+$', valor_texto):
-                return float(valor_texto.replace('.', '').replace(',', '.'))
+                return float(
+                    valor_texto.replace('.', '').replace(',', '.'))
             if re.match(r'^\d{1,3}(\.\d{3})+$', valor_texto):
                 return float(valor_texto.replace('.', ''))
             if re.match(r'^\d{1,3}(,\d{3})+$', valor_texto):
                 return float(valor_texto.replace(',', ''))
+            if re.match(r'^\d+,\d{1,2}$', valor_texto):
+                return float(valor_texto.replace(',', '.'))
 
             return float(valor_texto.replace(',', '.'))
-            
+
         except Exception:
             return None
 
@@ -195,6 +250,8 @@ class ExtractorOCR:
             items = self._extraer_items_formato_tabla(texto)
         if not items:
             items = self._extraer_items_formato_pos(texto)
+        if not items:
+            items = self._extraer_items_sin_encabezado(texto)
         return items
         
     def _extraer_items_formato_imgh(self, texto):
@@ -261,6 +318,10 @@ class ExtractorOCR:
         items = []
 
         patrones_inicio = [
+            r'(?:Item|ITEM)\s+C[oó]digo\s+Descripci[oó]n\s+Unid',
+            r'N[°º]\s+C[ÓO]DIGO\s+DESCRIPCI[ÓO]N',
+            r'[ÍIl][lt]em\s+Referencia\s+Descripci[oó]n',
+            r'[ÍIl][lt]em\s+(?:C[oó]digo|COD|SKU|Referencia)?\s*(?:Descripci[oó]n|DESCRIPCI[ÓO]N)',
             r'(?:Item|ITEM|N[°º]|#)\s+(?:C[oó]digo|COD|SKU)?\s*(?:Descripci[oó]n|DESCRIPCI[ÓO]N)',
             r'(?:Item|ITEM|N[°º])\s+(?:Descripci[oó]n|DESCRIPCI[ÓO]N)',
         ]
@@ -277,26 +338,66 @@ class ExtractorOCR:
 
         texto_tabla = texto[inicio_tabla:]
 
+        patron_linea_sin_codigo = re.compile(
+            r'^(\d+)\s+'
+            r'(.+?)\s+'
+            r'(\d+(?:[.,]\d+)?)\s+'
+            r'([\d,\.]+)\s+'
+            r'([\d,\.]+)\s*$',
+            re.MULTILINE
+        )
+
         fin_tabla_patrones = [
-            r'(?:Item|ITEM|N[°º]|#)\s+(?:C[oó]digo|COD|SKU)?\s*(?:Descripci[oó]n|DESCRIPCI[ÓO]N)',
-            r'(?:Item|ITEM|N[°º])\s+(?:Descripci[oó]n|DESCRIPCI[ÓO]N)',
+            r'Firma\s+(?:Elaborado|Recibido)',
+            r'(?:Total\s+l[ií]neas|TOTAL\s+ITEMS|Total\s+items)',
+            r'(?:Subtotal|SUBTOTAL)',
+            r'(?:Observaciones|OBSERVACIONES|Notas|NOTAS)',
+            r'(?:Valor\s+en\s+Letras|VALOR\s+EN\s+LETRAS)',
+            r'(?:Forma\s+de\s+pago|FORMA\s+DE\s+PAGO)',
         ]
         for patron in fin_tabla_patrones:
             match = re.search(patron, texto_tabla, re.IGNORECASE)
             if match:
                 texto_tabla = texto_tabla[:match.start()]
                 break
+
+            if len(texto_tabla.strip()) < 50:
+                for patron in patrones_inicio:
+                    matches = list(re.finditer(
+                        patron, texto, re.IGNORECASE))
+                    if len(matches) > 1:
+                        inicio_tabla = matches[-1].end()
+                        texto_tabla = texto[inicio_tabla:]
+                        for p in fin_tabla_patrones:
+                            match = re.search(
+                                p, texto_tabla, re.IGNORECASE)
+                            if match:
+                                texto_tabla = texto_tabla[:match.start()]
+                                break
+                        break
+                    elif len(matches) == 1:
+                        pos = matches[0].end()
+                        texto_despues = texto[pos:]
+                        if len(texto_despues.strip()) > 100:
+                            texto_tabla = texto_despues
+                            for p in fin_tabla_patrones:
+                                match = re.search(
+                                    p, texto_tabla, re.IGNORECASE)
+                                if match:
+                                    texto_tabla = texto_tabla[:match.start()]
+                                    break
+                            break
         
         patron_linea = re.compile(
-            r'(\d+)\s+'
-            r'([A-Z0-9\-\.]+)\s+'
+            r'^(\d+)\s+'
+            r'([A-Z0-9\-\.\*\/]+)\s+'
             r'(.+?)\s+'
             r'(\d+(?:[.,]\d+)?)\s+'
-            r'(?:Und\.?|UND\.?|unid\.?|und\.?|M\.?|MTS\.?|KG\.?)?\s*'
-            r'([0-9.,]+)\s+'
-            r'(?:\d+[,.]?\d*%?\s+)?'
-            r'(?:[0-9.,]+\s+)?'
-            r'([0-9.,]+)\s*$',
+            r'(?:Und\.?|UND\.?|unid\.?|und\.?|U\.?\s*M(?:edida)?\.?'
+            r'|M\.?|MTS\.?|KG\.?|NAR\.?)?\s*'
+            r'(\d+(?:[.,]\d{3})*(?:[.,]\d{1,2})?)\s+'
+            r'(?:\d+%?\s+)?'
+            r'(\d+(?:[.,]\d{3})*(?:[.,]\d{1,2})?)',
             re.MULTILINE
         )
 
@@ -309,6 +410,12 @@ class ExtractorOCR:
 
                 if not cantidad or not valor_unitario:
                     continue
+                
+                valor_total_texto = match.group(6)
+                valor_total = self._limpiar_numero(valor_total_texto)
+                if (valor_total and cantidad and valor_unitario and
+                        valor_total > valor_unitario * cantidad * 10):
+                    valor_unitario = valor_unitario * 1000
 
                 item = {
                     'codigo_producto': match.group(2).strip(),
@@ -322,7 +429,74 @@ class ExtractorOCR:
             except Exception as e:
                 print(f'Error procesando item tabla: {e}')
                 continue
-        
+
+        if not items:
+            for match in patron_linea_sin_codigo.finditer(texto_tabla):
+                try:
+                    descripcion = match.group(2).strip()
+                    descripcion = re.sub(r'\s+', ' ', descripcion)
+                    cantidad = self._limpiar_numero(match.group(3))
+                    valor_unitario = self._limpiar_numero(match.group(4))
+
+                    if not cantidad or not valor_unitario:
+                        continue
+
+                    if valor_unitario < 1:
+                        continue
+
+                    item = {
+                        'codigo_producto': '',
+                        'descripcion': descripcion,
+                        'cantidad': cantidad,
+                        'valor_unitario': valor_unitario,
+                        'porcentaje_impuesto': 19.0
+                    }
+                    items.append(item)
+
+                except Exception as e:
+                    print(f'Error procesando item sin código: {e}')
+                    continue
+                
+        return items
+
+    def _extraer_items_sin_encabezado(self, texto):
+        items = []
+
+        patron = re.compile(
+            r'^(\d+)\s+'
+            r'(\d{10,13})\s+'
+            r'(.+?)\s+'
+            r'(\d+(?:[.,]\d+)?)\s+'
+            r'([\d,\.]+)\s+'
+            r'([\d,\.]+)',
+            re.MULTILINE
+        )
+
+        for match in patron.finditer(texto):
+            try:
+                descripcion = match.group(3).strip()
+                descripcion = re.sub(r'\s+', ' ', descripcion)
+                cantidad = self._limpiar_numero(match.group(4))
+                valor_unitario = self._limpiar_numero(match.group(5))
+
+                if not cantidad or not valor_unitario:
+                    continue
+                if valor_unitario < 1:
+                    continue
+
+                item = {
+                    'codigo_producto': match.group(2).strip(),
+                    'descripcion': descripcion,
+                    'cantidad': cantidad,
+                    'valor_unitario': valor_unitario,
+                    'porcentaje_impuesto': 19.0
+                }
+                items.append(item)
+
+            except Exception as e:
+                print(f'Error procesando item sin encabezado: {e}')
+                continue
+
         return items
     
     def _extraer_items_formato_pos(self, texto):

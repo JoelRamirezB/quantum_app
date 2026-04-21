@@ -33,7 +33,12 @@
                          <td>{{ factura.numero_factura }}</td>
                          <td>{{ factura.proveedor or 'Sin proveedor' }}</td>
                          <td>{{ factura.fecha_emision or 'Sin factura' }}</td>
-                         <td>${{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                         <td>${{ '{:,.0f}'.format(
+                            (factura.total_pagar or 0) - 
+                            (factura.retefuente or 0) - 
+                            (factura.reteiva or 0) - 
+                            (factura.reteica or 0)) }}
+                        </td>
                          <td>{{ factura.usuario_validador.nombre_completo if factura.usuario_validador else 'N/A' }}</td>
                          <td>{{ factura.fecha_validacion.strftime('%d/%m/%Y %H:%M') if factura.fecha_validacion else 'N/A' }}</td>
                     </tr>

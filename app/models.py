@@ -73,6 +73,9 @@ class Factura(db.Model):
     subtotal = db.Column(db.Numeric(15, 2), default=0.00)
     total_impuestos = db.Column(db.Numeric(15, 2), default=0.00)
     total_pagar = db.Column(db.Numeric(15, 2), default=0.00)
+    retefuente = db.Column(db.Numeric(15, 2), default=0.00)
+    reteiva = db.Column(db.Numeric(15, 2), default=0.00)
+    reteica = db.Column(db.Numeric(15, 2), default=0.00)
     
     estado = db.Column(db.Enum('CARGADA', 'VALIDADA', 'EXPORTADA', 'ERROR'), default='CARGADA')
     ruta_archivo = db.Column(db.Text)

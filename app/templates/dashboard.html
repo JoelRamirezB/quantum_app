@@ -92,6 +92,22 @@
                 </div>
             </div>
         </div>
+        {% if current_user.rol == 'ADMINISTRADOR' %}
+        <div class="col-md-3 mt-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Configuración</h5>
+                    <p class="text-muted">
+                        Datos de la empresa y credenciales SIIGO
+                    </p>
+                    <a href="{{ url_for('configuracion.ver_configuracion') }}" 
+                    class="btn btn-outline-dark">
+                        Configurar empresa
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     <div class="card">
         <div class="card-header">
@@ -119,7 +135,12 @@
                         <td>{{ factura.nit_proveedor }}</td>
                         <td>{{ factura.fecha_emision or 'Sin fecha' }}</td>
                         <td>{{ factura.fecha_carga.strftime('%d/%m/%Y %H:%M') }}</td>
-                        <td>{{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                        <td>${{ '{:,.0f}'.format(
+                            (factura.total_pagar or 0) - 
+                            (factura.retefuente or 0) - 
+                            (factura.reteiva or 0) - 
+                            (factura.reteica or 0)) }}
+                        </td>
                         <td>
                             {% if factura.estado == 'CARGADA' %}
                             <span class="badge bg-warning text-dark">CARGADA</span>

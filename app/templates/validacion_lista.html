@@ -2,9 +2,18 @@
 {% block title %}Validación de facturas{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between aling-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <h3>Facturas pendientes de validación</h3>
-        <a href="{{ url_for('carga.subir_factura') }}" class="btn btn-primary">Cargar nueva factura</a> 
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('carga.subir_factura') }}" 
+            class="btn btn-primary btn-sm">
+                Cargar nueva factura
+            </a>
+            <a href="{{ url_for('auth.dashboard') }}" 
+            class="btn btn-secondary btn-sm">
+                Volver al menú principal
+            </a>
+        </div>
     </div>
     {% if facturas %}
     <div class="card">
@@ -28,7 +37,12 @@
                         <td>{{ factura.proveedor }}</td>
                         <td>{{ factura.nit_proveedor }}</td>
                         <td>{{ factura.fecha_emision or 'Sin fecha' }}</td>
-                        <td>${{ '{:,.0f}'.format(factura.total_pagar or 0) }}</td>
+                        <td>${{ '{:,.0f}'.format(
+                            (factura.total_pagar or 0) - 
+                            (factura.retefuente or 0) - 
+                            (factura.reteiva or 0) - 
+                            (factura.reteica or 0)) }}
+                        </td>
                         <td>
                             {% if factura.estado == 'CARGADA' %}
                             <span class="badge bg-warning text-dark">

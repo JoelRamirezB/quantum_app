@@ -50,6 +50,13 @@ def ver_factura(id_factura):
             fecha_texto = request.form.get('fecha_emision')
             factura.fecha_emision = convertir_fecha(fecha_texto)
 
+            factura.retefuente = float(
+                request.form.get('retefuente', 0) or 0)
+            factura.reteiva = float(
+                request.form.get('reteiva', 0) or 0)
+            factura.reteica = float(
+                request.form.get('reteica', 0) or 0)
+
             items_ids = request.form.getlist('item_id')
             for item_id in items_ids:
                 item = ItemFactura.query.get(int(item_id))

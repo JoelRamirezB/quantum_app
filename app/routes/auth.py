@@ -21,6 +21,7 @@ def login():
                 flash('Tu cuenta está desactivada', 'danger')
                 return redirect(url_for('auth.login'))
             login_user(usuario)
+            session.permanent = True
             return redirect(url_for('auth.dashboard'))
         else:
             flash('Credenciales incorrectas', 'danger')            
