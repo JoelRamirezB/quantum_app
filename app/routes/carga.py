@@ -109,7 +109,7 @@ def subir_factura():
                     codigo_producto=item_data.get('codigo_producto', '')
                 )
                 db.session.add(nuevo_item)
-                
+
             nueva_factura.subtotal = round(sum(
                 float(i.get('cantidad') or 0) *
                 float(i.get('valor_unitario') or 0)
@@ -122,6 +122,13 @@ def subir_factura():
             nueva_factura.total_pagar = round(
                 nueva_factura.subtotal +
                 nueva_factura.total_impuestos, 2)
+
+            print(f'Items procesados: {len(items)}')
+            for i in items:
+                print(f'  cantidad={i.get("cantidad")} valor_unitario={i.get("valor_unitario")} porcentaje={i.get("porcentaje_impuesto")}')
+            print(f'Subtotal calculado: {nueva_factura.subtotal}')
+            print(f'Total impuestos: {nueva_factura.total_impuestos}')
+            print(f'Total pagar: {nueva_factura.total_pagar}')
 
             auditoria = Auditoria(
                 id_usuario=current_user.id_usuario,
