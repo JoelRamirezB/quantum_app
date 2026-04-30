@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
 from app import db
@@ -59,3 +59,87 @@ def ver_configuracion():
         return redirect(url_for('configuracion.ver_configuracion'))
 
     return render_template('configuracion.html', config=config)
+
+@configuracion.route('/configuracion/test-siigo')
+@login_required
+@solo_admin
+def test_siigo():
+    from app.services.siigo_service import SiigoService
+    try:
+        siigo = SiigoService()
+        token = siigo.obtener_token()
+
+        if not token:
+            return jsonify({
+                'exito': False,
+                'mensaje': 'No se pudo obtener el token de SIIGO'
+            })
+
+        comprobantes = siigo.obtener_tipos_comprobante()
+        usuarios = siigo.obtener_usuarios()
+        impuestos = siigo.obtener_impuestos()
+
+        return jsonify({
+            'exito': True,
+            'mensaje': 'Conexion exitosa con SIIGO NUBE',
+            'datos': {
+                'comprobantes': len(comprobantes) if comprobantes else 0,
+                'usuarios': len(usuarios) if usuarios else 0,
+                'impuestos': len(impuestos) if impuestos else 0,
+                'empresa': 'Atelcro S.A.S'
+            }
+        })
+
+    except Exception as e:
+        return jsonify({
+            'exito': False,
+            'mensaje': f'Error de conexion: {str(e)}'
+        })
+
+@configuracion.route('/usuarios')
+@login_required
+@solo_admin
+def lista_usuarios():
+    from app.models import Usuario
+    usuarios = Usuario.query.order_by(
+        Usuario.fecha_creacion.desc()).all()
+    return render_template(
+        'usuarios.html', usuarios=usuarios)
+
+@configuracion.route('/usuarios/<int:id_usuario>/reset',
+                     methods=['POST'])
+@login_required
+@solo_admin
+def reset_password(id_usuario):
+    from app.models import Usuario
+    from app import bcrypt
+
+    usuario = Usuario.query.get_or_404(id_usuario)
+
+    if usuario.id_usuario == current_user.id_usuario:
+        flash('No puedes resetear tu propia contraseña '
+              'desde aquí.', 'warning')
+        return redirect(url_for(
+            'configuracion.lista_usuarios'))
+
+    nueva_password = 'Quantum2026'
+    hash_password = bcrypt.generate_password_hash(
+        nueva_password).decode('utf-8')
+    usuario.contrasena_encript = hash_password
+    db.session.commit()
+
+    db.session.add(Auditoria(
+        id_usuario=current_user.id_usuario,
+        accion='RESET_PASSWORD',
+        tabla_afectada='usuario',
+        id_referencia=usuario.id_usuario,
+        detalles=f'Contraseña reseteada para '
+                 f'{usuario.email}'
+    ))
+    db.session.commit()
+
+    flash(f'Contraseña de {usuario.nombre_completo} '
+          f'reseteada a Quantum2026.',
+          'success')
+    return redirect(url_for(
+        'configuracion.lista_usuarios'))

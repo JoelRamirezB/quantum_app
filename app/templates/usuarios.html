@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de Usuarios{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Gestión de usuarios</h3>
+        <a href="{{ url_for('configuracion.ver_configuracion') }}" class="btn btn-secondary btn-sm">Volver a configuración</a>
+    </div>
+    {% with messages = get_flashed_messages(
+        with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} 
+                            alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" 
+                            class="btn-close" 
+                            data-bs-dismiss="alert">
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="card">
+        <div class="card-header">
+            <strong>Usuarios del sistema</strong>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Fecha creación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.nombre_completo }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>
+                            <span class="badge {% if usuario.rol == 'ADMINISTRADOR' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ usuario.rol }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if usuario.activo %}
+                            <span class="badge bg-success">
+                                Activo
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger">
+                                Inactivo
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ usuario.fecha_creacion.strftime('%d/%m/%Y') if usuario.fecha_creacion else 'N/A' }}
+                        </td>
+                        <td>
+                            {% if usuario.id_usuario != current_user.id_usuario %}
+                            <form method="POST" 
+                                  action="{{ url_for('configuracion.reset_password', id_usuario=usuario.id_usuario) }}"
+                                  onsubmit="return confirm('¿Resetear la contraseña de {{ usuario.nombre_completo }} a Quantum2026?')">
+                                <button type="submit" class="btn btn-warning btn-sm">Resetear contraseña</button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">
+                                Tu cuenta
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="alert alert-info mt-3">
+        <strong>Contraseña temporal:</strong> Quantum2026 — 
+        El usuario debe cambiarla después de iniciar sesión.
+    </div>
+</div>
+{% endblock %}

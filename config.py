@@ -9,6 +9,10 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    SIIGO_USUARIO = os.environ.get('SIIGO_USUARIO')
+    SIIGO_LLAVE_ACCESO = os.environ.get('SIIGO_LLAVE_ACCESO')
+    SIIGO_URL = os.environ.get('SIIGO_URL')
     
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  

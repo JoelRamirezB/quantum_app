@@ -4,6 +4,10 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4>Configuración de la empresa</h4>
+        <a href="{{ url_for('configuracion.lista_usuarios') }}"
+        class="btn btn-outline-secondary btn-sm">
+            Gestionar usuarios
+        </a>
         <a href="{{ url_for('auth.dashboard') }}" 
         class="btn btn-secondary btn-sm">
             Volver al menú principal
@@ -64,4 +68,69 @@
         <a href="{{ url_for('configuracion.ver_configuracion') }}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
 </div>
+<div class="card mt-4">
+    <div class="card-header">
+        <strong>Conexión SIIGO NUBE</strong>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">
+            Verifica la comunicación bidireccional con 
+            la API de SIIGO NUBE usando las credenciales 
+            configuradas.
+        </p>
+        <button id="btn-test-siigo" 
+                class="btn btn-outline-primary"
+                onclick="testSiigo()">
+            Probar conexión con SIIGO
+        </button>
+        <div id="resultado-siigo" class="mt-3"></div>
+    </div>
+</div>
+<script>
+    function testSiigo() {
+        const btn = document.getElementById('btn-test-siigo');
+        const resultado = document.getElementById(
+            'resultado-siigo');
+
+        btn.disabled = true;
+        btn.textContent = 'Conectando...';
+        resultado.innerHTML = '';
+
+        fetch('{{ url_for("configuracion.test_siigo") }}')
+            .then(r => r.json())
+            .then(data => {
+                if (data.exito) {
+                    resultado.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>✓ ${data.mensaje}</strong>
+                            <ul class="mt-2 mb-0">
+                                <li>Comprobantes disponibles: 
+                                    ${data.datos.comprobantes}</li>
+                                <li>Usuarios registrados: 
+                                    ${data.datos.usuarios}</li>
+                                <li>Impuestos configurados: 
+                                    ${data.datos.impuestos}</li>
+                                <li>Empresa: 
+                                    ${data.datos.empresa}</li>
+                            </ul>
+                        </div>`;
+                } else {
+                    resultado.innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>✗ ${data.mensaje}</strong>
+                        </div>`;
+                }
+            })
+            .catch(err => {
+                resultado.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>Error de red: ${err}</strong>
+                    </div>`;
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = 'Probar conexión con SIIGO';
+            });
+    }
+</script>
 {% endblock %}

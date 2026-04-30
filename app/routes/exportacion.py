@@ -88,11 +88,13 @@ def ver_exportacion():
 @exportacion.route('/exportacion/descargar', methods=['POST'])
 @login_required
 def descargar_exportacion():
-    facturas = Factura.query.filter_by(estado = 'VALIDADA').all()
+    facturas = Factura.query.filter_by(
+        estado='VALIDADA').all()
 
     if not facturas:
-        flash('No hay facturas validadas para exportar.', 'warning')
-        return redirect(url_for('exportacion.ver_exportacion')) 
+        flash('No hay facturas validadas para exportar.','warning')
+        return redirect(
+            url_for('exportacion.ver_exportacion'))
 
     try:
         archivo_excel = generar_excel(facturas)
@@ -100,35 +102,34 @@ def descargar_exportacion():
         for factura in facturas:
             factura.estado = 'EXPORTADA'
             factura.fecha_exportacion = datetime.utcnow()
-
-            auditoria = Auditoria(
-                id_usuario=current_user.id_usuario, 
-                accion = 'EXPORTACION',
-                tabla_afectada = 'factura',
-                id_referencia = factura.id_factura,
-                detalles = f'Factura {factura.numero_factura} exportada a Excel'
-            )
-            db.session.add(auditoria)
+            db.session.add(Auditoria(
+                id_usuario=current_user.id_usuario,
+                accion='EXPORTACION_EXCEL',
+                tabla_afectada='factura',
+                id_referencia=factura.id_factura,
+                detalles=(f'Factura {factura.numero_factura} ' f'exportada a Excel para carga en SIIGO')
+            ))
 
         db.session.commit()
+
+        flash('Facturas exportadas correctamente. ' 'Importe el archivo en SIIGO NUBE usando ' 'la opción de carga masiva.', 'success')
 
         nombre_archivo = (
             f'quantum_export_'
             f'{datetime.now().strftime("%Y%m%d_%H%M%S")}'
-            f'.xlsx'
-        )
+            f'.xlsx')
 
         return send_file(
             archivo_excel,
-            mimetype='application/vnd.openxmlformats-'
-                     'officedocument.spreadsheetml.sheet',
+            mimetype=(
+                'application/vnd.openxmlformats-'
+                'officedocument.spreadsheetml.sheet'),
             as_attachment=True,
-            download_name=nombre_archivo
-        )
-    
+            download_name=nombre_archivo)
+
     except Exception as e:
         db.session.rollback()
-        print(f'Error generando exportación: {str(e)}')
-        flash('Ocurrio un error al generar el archivo. Por favor intenta de nuevo.', 'danger')
-        
-        return redirect(url_for('exportacion.ver_exportacion')) 
+        print(f'Error generando exportacion: {str(e)}')
+        flash('Ocurrio un error al generar el archivo.', 'danger')
+        return redirect(
+            url_for('exportacion.ver_exportacion'))
