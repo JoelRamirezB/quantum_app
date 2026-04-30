@@ -17,5 +17,12 @@ class Config:
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  
 
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_recycle': 280,
+        'pool_pre_ping': True,
+        'pool_timeout': 20,
+        'pool_size': 5
+    }
+
 def init_app(app):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
