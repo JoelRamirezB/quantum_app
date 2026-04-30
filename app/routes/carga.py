@@ -87,15 +87,41 @@ def subir_factura():
             db.session.flush()
 
             for item_data in items:
+                cantidad = float(item_data.get('cantidad') or 0)
+                valor_unitario = float(item_data.get('valor_unitario') or 0)
+                porcentaje_impuesto = float(
+                    item_data.get('porcentaje_impuesto') or 0)
+
+                valor_impuesto = round(
+                    (cantidad * valor_unitario) *
+                    (porcentaje_impuesto / 100), 2)
+                valor_total = round(
+                    (cantidad * valor_unitario) + valor_impuesto, 2)
+
                 nuevo_item = ItemFactura(
                     id_factura=nueva_factura.id_factura,
                     descripcion=item_data.get('descripcion', ''),
-                    cantidad=item_data.get('cantidad', 1.0),
-                    valor_unitario=item_data.get('valor_unitario', 0.0),
-                    porcentaje_impuesto=item_data.get('porcentaje_impuesto', 0.0),
+                    cantidad=cantidad,
+                    valor_unitario=valor_unitario,
+                    porcentaje_impuesto=porcentaje_impuesto,
+                    valor_impuesto=valor_impuesto,
+                    valor_total=valor_total,
                     codigo_producto=item_data.get('codigo_producto', '')
                 )
                 db.session.add(nuevo_item)
+                
+            nueva_factura.subtotal = round(sum(
+                float(i.get('cantidad') or 0) *
+                float(i.get('valor_unitario') or 0)
+                for i in items), 2)
+            nueva_factura.total_impuestos = round(sum(
+                (float(i.get('cantidad') or 0) *
+                float(i.get('valor_unitario') or 0)) *
+                (float(i.get('porcentaje_impuesto') or 0) / 100)
+                for i in items), 2)
+            nueva_factura.total_pagar = round(
+                nueva_factura.subtotal +
+                nueva_factura.total_impuestos, 2)
 
             auditoria = Auditoria(
                 id_usuario=current_user.id_usuario,
