@@ -31,11 +31,10 @@ quantum/
 │   ├── services/        # Servicios (ExtractorOCR, SiigoService)
 │   ├── templates/       # Plantillas Jinja2
 │   └── static/          # Archivos CSS, JS e imágenes
-├── migrations/
-│   └── schema.sql       # Script de creación de base de datos y triggers
 ├── requirements.txt     # Dependencias de Python
 ├── config.py            # Configuración de la aplicación
-├── .env.example         # Plantilla de variables de entorno
+├── .env                 # Plantilla de variables de entorno
+├── init_db.py           # Creación del primer usuario
 └── run.py               # Punto de entrada de la aplicación
 ```
 
