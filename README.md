@@ -99,8 +99,6 @@ SECRET_KEY=<cadena_aleatoria_segura>
 DATABASE_URL=mysql+pymysql://<usuario>:<contraseña>@localhost/quantum_db
 ```
 
-> ⚠️ **Nunca subas el archivo `.env` al repositorio.** Está incluido en `.gitignore`.
-
 ### 6. Crear el usuario administrador inicial
 
 El primer usuario administrador se inserta directamente en la base de datos. Primero genera el hash de la contraseña:
