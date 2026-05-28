@@ -34,6 +34,7 @@ quantum/
 ├── requirements.txt     # Dependencias de Python
 ├── config.py            # Configuración de la aplicación
 ├── .env                 # Plantilla de variables de entorno
+├── Script SQL BD.sql    # Script de creación de base de datos y triggers
 ├── init_db.py           # Creación del primer usuario
 └── run.py               # Punto de entrada de la aplicación
 ```
@@ -77,7 +78,7 @@ pip install -r requirements.txt
 Acceder a MySQL y ejecutar el script de creación:
 
 ```bash
-mysql -u <usuario> -p < migrations/schema.sql
+mysql -u <usuario> -p < Script\ SQL\ BD.sql
 ```
 
 Este script crea la base de datos `quantum_db`, las tablas y los cuatro triggers de integridad.
